@@ -13,13 +13,21 @@ type View = 'Today' | 'Inbox' | 'Tasks' | 'This Week' | 'Calendar'
 const nav: { label: View; icon: typeof LayoutDashboard }[] = [{ label: 'Today', icon: LayoutDashboard }, { label: 'Inbox', icon: Inbox }, { label: 'Tasks', icon: ListTodo }, { label: 'This Week', icon: CalendarDays }, { label: 'Calendar', icon: CalendarDays }]
 const pad = (n: number) => String(n).padStart(2, '0')
 const keyOf = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+const parseDateKey = (value: Task['dueDate']) => {
+  if (!value) return ''
+  const raw = value instanceof Date ? value : String(value)
+  const dateOnly = typeof raw === 'string' ? raw.match(/^(\d{4})-(\d{2})-(\d{2})/) : null
+  if (dateOnly) return `${dateOnly[1]}-${dateOnly[2]}-${dateOnly[3]}`
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? '' : keyOf(parsed)
+}
 const mondayOf = (d: Date) => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); const day = x.getDay(); x.setDate(x.getDate() - (day === 0 ? 6 : day - 1)); return x }
 const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const priorityRank: Record<string, number> = { High: 0, Medium: 1, Low: 2 }
 const priorityStyle: Record<string, string> = { High: 'bg-red-500', Medium: 'bg-yellow-400', Low: 'bg-gray-400' }
 const tagColors = ['bg-blue-100 text-blue-700', 'bg-emerald-100 text-emerald-700', 'bg-orange-100 text-orange-700', 'bg-pink-100 text-pink-700', 'bg-violet-100 text-violet-700', 'bg-cyan-100 text-cyan-700']
 const tagStyle = (tag: string) => tagColors[[...tag].reduce((sum, char) => sum + char.charCodeAt(0), 0) % tagColors.length]
-const dateKey = (value: Task['dueDate']) => value ? keyOf(new Date(value)) : ''
+const dateKey = parseDateKey
 const sortTasks = (items: Task[]) => [...items].sort((a, b) => (priorityRank[a.priority] ?? 1) - (priorityRank[b.priority] ?? 1) || (dateKey(a.dueDate) || '9999-12-31').localeCompare(dateKey(b.dueDate) || '9999-12-31'))
 
 export function BrainDumpDashboard({ initialDump, initialTasks, userName, dateLabel }: { initialDump: string; initialTasks: Task[]; userName: string; dateLabel: string }) {
