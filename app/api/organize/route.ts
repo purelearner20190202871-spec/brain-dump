@@ -28,20 +28,25 @@ export async function POST(request: Request) {
       temperature: 0.2,
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: 'Turn messy personal notes into concise practical tasks. Return only JSON in this shape: {"tasks":[{"title":"...","category":"Personal|Work|Errands|Study|Today","priority":"High|Medium|Low","time":"Today|Tomorrow|This week"}]}. Create at most 8 tasks, never invent details, and merge duplicates.' },
+        { role: 'system', content: 'Turn messy personal notes into concise practical tasks. Return only JSON in this shape: {"tasks":[{"title":"...","category":"Personal|Work|Errands|Study|Today","priority":"High|Medium|Low","time":"Today|Tomorrow|This week","dueDate":"YYYY-MM-DD or ISO timestamp"}]}. Use today when no date is mentioned. Infer High for urgent/important wording, Medium for normal actionable work, and Low for optional/non-urgent items. Create at most 8 tasks, never invent details, and merge duplicates.' },
         { role: 'user', content },
       ],
     })
 
     const raw = completion.choices[0]?.message?.content
     if (!raw) return NextResponse.json({ error: 'No actionable tasks found. Try adding a little more detail.' }, { status: 422 })
-    const parsed = JSON.parse(raw) as { tasks?: Array<{ title?: string; category?: string; priority?: string; time?: string }> }
-    const organized = (parsed.tasks ?? []).filter((item) => typeof item.title === 'string' && item.title.trim()).slice(0, 8)
+    const parsed = JSON.parse(raw) as { tasks?: Array<{ title?: string; category?: string; priority?: string; time?: string; dueDate?: string }> }
+    const today = new Date(); today.setHours(12, 0, 0, 0)
+    const organized = (parsed.tasks ?? []).filter((item) => typeof item.title === 'string' && item.title.trim()).slice(0, 8).map((item) => {
+      const parsedDate = item.dueDate ? new Date(item.dueDate) : today
+      const safeDate = Number.isNaN(parsedDate.getTime()) ? today : parsedDate
+      return { ...item, priority: item.priority === 'High' || item.priority === 'Low' ? item.priority : 'Medium', dueDate: safeDate }
+    })
     if (!organized.length) return NextResponse.json({ error: 'No actionable tasks found. Try adding a little more detail.' }, { status: 422 })
 
     const userId = session.user.id
     const created = await db.insert(task).values(organized.map((item) => ({
-      id: crypto.randomUUID(), userId, title: item.title!.trim().slice(0, 240), category: item.category ?? 'Today', priority: item.priority ?? 'Medium', time: item.time ?? 'Today', done: false,
+      id: crypto.randomUUID(), userId, title: item.title!.trim().slice(0, 240), category: item.category ?? 'Today', priority: item.priority, time: item.time ?? 'Today', dueDate: item.dueDate, done: false,
     }))).returning()
     const existing = await db.select({ id: brainDump.id }).from(brainDump).where(eq(brainDump.userId, userId)).limit(1)
     if (existing[0]) await db.update(brainDump).set({ content, updatedAt: new Date() }).where(eq(brainDump.id, existing[0].id))
@@ -52,7 +57,7 @@ export async function POST(request: Request) {
     const status = typeof error === 'object' && error !== null && 'status' in error && typeof error.status === 'number' ? error.status : 500
     const message = error instanceof Error ? error.message : 'Unknown Groq failure'
     const category = status === 401 || status === 403 ? 'Groq authentication failed' : status === 404 ? 'Groq model or endpoint not found' : status === 400 ? 'Groq invalid request' : status === 429 ? 'Groq rate limit reached' : 'Groq server/API error'
-    console.error('[v0] Organize thoughts failed', { category, status, message, model, endpoint: 'https://api.groq.com/openai/v1/chat/completions' })
+    console.error('[v0] Organize thoughts failed', { category, status, message, model: 'openai/gpt-oss-120b', endpoint: 'https://api.groq.com/openai/v1/chat/completions' })
     const safeError = process.env.NODE_ENV === 'development' ? `${category} (${status}). Check server logs for details.` : 'We could not organize those thoughts. Please try again.'
     return NextResponse.json({ error: safeError }, { status: status >= 400 && status < 600 ? status : 500 })
   }
