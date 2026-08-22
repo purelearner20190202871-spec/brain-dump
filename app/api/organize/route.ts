@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     const content = typeof body?.content === 'string' ? body.content.trim().slice(0, 6000) : ''
     if (!content) return NextResponse.json({ error: 'Write a thought first.' }, { status: 400 })
     const apiKey = process.env.GROQ_API_KEY
-    const model = 'llama-3.3-70b-versatile'
+    const model = 'openai/gpt-oss-120b'
     console.info('[v0] Organize route called', { hasGroqApiKey: Boolean(apiKey), model, endpoint: 'https://api.groq.com/openai/v1/chat/completions' })
     if (!apiKey) {
       console.error('[v0] GROQ_API_KEY is missing at runtime')
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     const status = typeof error === 'object' && error !== null && 'status' in error && typeof error.status === 'number' ? error.status : 500
     const message = error instanceof Error ? error.message : 'Unknown Groq failure'
     const category = status === 401 || status === 403 ? 'Groq authentication failed' : status === 404 ? 'Groq model or endpoint not found' : status === 400 ? 'Groq invalid request' : status === 429 ? 'Groq rate limit reached' : 'Groq server/API error'
-    console.error('[v0] Organize thoughts failed', { category, status, message, model: 'llama-3.3-70b-versatile', endpoint: 'https://api.groq.com/openai/v1/chat/completions' })
+    console.error('[v0] Organize thoughts failed', { category, status, message, model, endpoint: 'https://api.groq.com/openai/v1/chat/completions' })
     const safeError = process.env.NODE_ENV === 'development' ? `${category} (${status}). Check server logs for details.` : 'We could not organize those thoughts. Please try again.'
     return NextResponse.json({ error: safeError }, { status: status >= 400 && status < 600 ? status : 500 })
   }
