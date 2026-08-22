@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       temperature: 0.2,
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: 'Turn messy personal notes into concise practical tasks. Return only JSON in this shape: {"tasks":[{"title":"...","category":"Personal|Work|Errands|Study|Today","priority":"High|Medium|Low","time":"Today|Tomorrow|This week","dueDate":"YYYY-MM-DD or ISO timestamp"}]}. Use today when no date is mentioned. Infer High for urgent/important wording, Medium for normal actionable work, and Low for optional/non-urgent items. Create at most 8 tasks, never invent details, and merge duplicates.' },
+        { role: 'system', content: 'Turn messy personal notes into concise practical tasks. Return only JSON in this shape: {"tasks":[{"title":"...","category":"relevant subject or tag such as DSA, Maths, DBMS, OS, Work, Personal, Errands, or Today","priority":"High|Medium|Low","time":"Today|Tomorrow|This week","dueDate":"YYYY-MM-DD or ISO timestamp"}]}. Use today when no date is mentioned. Infer High for urgent/important wording, Medium for normal actionable work, and Low for optional/non-urgent items. Create at most 8 tasks, never invent details, and merge duplicates.' },
         { role: 'user', content },
       ],
     })

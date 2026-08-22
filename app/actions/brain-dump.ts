@@ -36,9 +36,10 @@ export async function createPrivateTask(input: { title: string; category?: strin
   const title = input.title.trim().slice(0, 240)
   if (!title) throw new Error('Task title is required')
   const priority = input.priority === 'High' || input.priority === 'Low' ? input.priority : 'Medium'
+  const category = (input.category?.trim() || 'Personal').slice(0, 40)
   const dueDate = input.dueDate ? new Date(input.dueDate) : null
   if (dueDate && Number.isNaN(dueDate.getTime())) throw new Error('Invalid due date')
-  const created = await db.insert(task).values({ id: crypto.randomUUID(), userId, title, category: input.category ?? 'Today', priority, time: input.time ?? 'Today', dueDate }).returning()
+  const created = await db.insert(task).values({ id: crypto.randomUUID(), userId, title, category, priority, time: input.time ?? 'Today', dueDate }).returning()
   return created[0]
 }
 
