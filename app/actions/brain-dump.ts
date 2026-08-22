@@ -3,7 +3,7 @@
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { brainDump, task } from '@/lib/db/schema'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { headers } from 'next/headers'
 
 async function getUserId() {
@@ -31,7 +31,7 @@ export async function getPrivateTasks() {
   return db.select().from(task).where(eq(task.userId, userId)).orderBy(task.createdAt)
 }
 
-export async function createPrivateTask(input: { title: string; category?: string; priority?: string; time?: string; dueDate?: string }) {
+export async function createPrivateTask(input: { title: string; category?: string; priority?: string; time?: string; dueDate?: string; parentId?: string }) {
   const userId = await getUserId()
   const title = input.title.trim().slice(0, 240)
   if (!title) throw new Error('Task title is required')
@@ -39,7 +39,7 @@ export async function createPrivateTask(input: { title: string; category?: strin
   const category = (input.category?.trim() || 'Personal').slice(0, 40)
   const dueDate = input.dueDate ? new Date(input.dueDate) : null
   if (dueDate && Number.isNaN(dueDate.getTime())) throw new Error('Invalid due date')
-  const created = await db.insert(task).values({ id: crypto.randomUUID(), userId, title, category, priority, time: input.time ?? 'Today', dueDate }).returning()
+  const created = await db.insert(task).values({ id: crypto.randomUUID(), userId, title, category, priority, time: input.time ?? 'Today', dueDate, parentId: input.parentId ?? null }).returning()
   return created[0]
 }
 
@@ -52,7 +52,9 @@ export async function togglePrivateTask(id: string, done: boolean) {
 
 export async function deletePrivateTask(id: string) {
   const userId = await getUserId()
-  const deleted = await db.delete(task).where(and(eq(task.id, id), eq(task.userId, userId))).returning({ id: task.id })
-  if (!deleted[0]) throw new Error('Task not found')
+  const children = await db.select({ id: task.id }).from(task).where(and(eq(task.parentId, id), eq(task.userId, userId)))
+  const ids = [id, ...children.map((child) => child.id)]
+  const deleted = await db.delete(task).where(and(inArray(task.id, ids), eq(task.userId, userId))).returning({ id: task.id })
+  if (!deleted.length) throw new Error('Task not found')
   return { ok: true }
 }
