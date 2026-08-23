@@ -1,10 +1,17 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { PwaRegister } from '@/components/pwa-register'
 
 export const metadata: Metadata = {
   title: 'Brain Dump — Clear your mind',
   description: 'Turn messy thoughts into a clear, organized plan.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    title: 'Brain Dump',
+    statusBarStyle: 'black-translucent',
+  },
   icons: {
     icon: [
       {
@@ -40,6 +47,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background">
       <body className="antialiased">
+        <PwaRegister />
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
