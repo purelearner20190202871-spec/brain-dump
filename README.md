@@ -1,33 +1,22 @@
-# brain-dump
+# Brain Dump
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+A private space to capture what is on your mind and turn it into focused action.
 
-## Built with v0
+## Features
+- Clean and minimal login interface
+- Private thought capturing space
+- Built for personal productivity
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+## Tech Stack
+- Next.js
+- TypeScript
+- Tailwind CSS
+- Deployed on Vercel
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_N9iVmBYwVJTIimAJ9L0VS2AmAReh)
+## Live Demo
+https://brain-dump-n27k4x1fw-shivambuilds2-s-projects.vercel.app
 
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-## Learn More
-
-To learn more, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+## How to Run Locally
+1. Clone the repository
+2. Run `pnpm install` or `npm install`
+3. Run `pnpm dev` or `npm run dev`
