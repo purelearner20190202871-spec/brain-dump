@@ -55,11 +55,11 @@ export async function getPrivateTasks() {
   return db.select().from(task).where(eq(task.userId, userId)).orderBy(task.createdAt)
 }
 
-export async function createPrivateTask(input: { title: string; category?: string; priority?: string; time?: string; subjectId?: string }) {
+export async function createPrivateTask(input: { title: string; category?: string; priority?: string; time?: string; dueDate?: Date | null; subjectId?: string }) {
   const userId = await getUserId()
   const title = input.title.trim().slice(0, 240)
   if (!title) throw new Error('Task title is required')
-  const created = await db.insert(task).values({ id: crypto.randomUUID(), userId, title, category: input.category ?? 'Today', priority: input.priority ?? 'Medium', time: input.time ?? 'Today', subjectId: input.subjectId ?? null }).returning()
+  const created = await db.insert(task).values({ id: crypto.randomUUID(), userId, title, category: input.category ?? 'Today', priority: input.priority ?? 'Medium', time: input.time ?? 'Today', dueDate: input.dueDate ?? null, subjectId: input.subjectId ?? null }).returning()
   return created[0]
 }
 
