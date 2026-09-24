@@ -30,9 +30,18 @@ export async function savePrivateDump(content: string) {
   return { ok: true }
 }
 
+const defaultSubjectNames = ['EG CAD', 'Engineering Mathematics', 'Physics', 'CP', 'BADE']
+
 export async function getPrivateSubjects() {
   const userId = await getUserId()
-  return db.select().from(subject).where(eq(subject.userId, userId)).orderBy(subject.createdAt)
+  const existing = await db.select().from(subject).where(eq(subject.userId, userId)).orderBy(subject.createdAt)
+  const existingNames = new Set(existing.map((item) => item.name.toLowerCase()))
+  const missing = defaultSubjectNames.filter((name) => !existingNames.has(name.toLowerCase()))
+  if (missing.length) {
+    await db.insert(subject).values(missing.map((name) => ({ id: crypto.randomUUID(), userId, name })))
+    return db.select().from(subject).where(eq(subject.userId, userId)).orderBy(subject.createdAt)
+  }
+  return existing
 }
 
 export async function createPrivateSubject(name: string) {
