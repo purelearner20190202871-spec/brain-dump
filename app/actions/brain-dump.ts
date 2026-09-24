@@ -2,9 +2,9 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { brainDump, notes, subject, task } from '@/lib/db/schema'
+import { brainDump, focusSessions, notes, subject, task } from '@/lib/db/schema'
 import { del } from '@vercel/blob'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, gte, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 
 async function getUserId() {
@@ -89,6 +89,20 @@ export async function deletePrivateNote(id: string) {
   await del(found[0].fileUrl)
   await db.delete(notes).where(and(eq(notes.id, id), eq(notes.userId, userId)))
   return { ok: true }
+}
+
+export async function getTodayFocusMinutes() {
+  const userId = await getUserId()
+  const start = new Date(); start.setHours(0, 0, 0, 0)
+  const result = await db.select({ total: sql<number>`coalesce(sum(${focusSessions.durationMinutes}), 0)` }).from(focusSessions).where(and(eq(focusSessions.userId, userId), gte(focusSessions.completedAt, start)))
+  return Number(result[0]?.total ?? 0)
+}
+
+export async function completeFocusSession(input: { durationMinutes: number; taskId?: string | null }) {
+  const userId = await getUserId()
+  const durationMinutes = Math.max(1, Math.min(240, Math.floor(input.durationMinutes)))
+  const created = await db.insert(focusSessions).values({ id: crypto.randomUUID(), userId, taskId: input.taskId ?? null, durationMinutes }).returning()
+  return created[0]
 }
 
 export async function deletePrivateTask(id: string) {
