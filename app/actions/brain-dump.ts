@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { brainDump, focusSessions, notes, subject, task } from '@/lib/db/schema'
+import { brainDump, focusSessions, notes, subject, syllabusTopics, task } from '@/lib/db/schema'
 import { del } from '@vercel/blob'
 import { and, eq, gte, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
@@ -47,6 +47,34 @@ export async function deletePrivateSubject(id: string) {
   const userId = await getUserId()
   await db.update(task).set({ subjectId: null, updatedAt: new Date() }).where(and(eq(task.userId, userId), eq(task.subjectId, id)))
   await db.delete(subject).where(and(eq(subject.id, id), eq(subject.userId, userId)))
+  return { ok: true }
+}
+
+export async function getPrivateSyllabusTopics() {
+  const userId = await getUserId()
+  return db.select().from(syllabusTopics).where(eq(syllabusTopics.userId, userId)).orderBy(syllabusTopics.createdAt)
+}
+
+export async function createPrivateSyllabusTopic(subjectId: string, name: string) {
+  const userId = await getUserId()
+  const cleanName = name.trim().slice(0, 160)
+  if (!cleanName) throw new Error('Topic name is required')
+  const ownedSubject = await db.select({ id: subject.id }).from(subject).where(and(eq(subject.id, subjectId), eq(subject.userId, userId))).limit(1)
+  if (!ownedSubject[0]) throw new Error('Subject not found')
+  const created = await db.insert(syllabusTopics).values({ id: crypto.randomUUID(), userId, subjectId, name: cleanName }).returning()
+  return created[0]
+}
+
+export async function togglePrivateSyllabusTopic(id: string, covered: boolean) {
+  const userId = await getUserId()
+  const updated = await db.update(syllabusTopics).set({ covered }).where(and(eq(syllabusTopics.id, id), eq(syllabusTopics.userId, userId))).returning()
+  if (!updated[0]) throw new Error('Topic not found')
+  return updated[0]
+}
+
+export async function deletePrivateSyllabusTopic(id: string) {
+  const userId = await getUserId()
+  await db.delete(syllabusTopics).where(and(eq(syllabusTopics.id, id), eq(syllabusTopics.userId, userId)))
   return { ok: true }
 }
 
