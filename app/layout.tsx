@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { PwaRegister } from '@/components/pwa-register'
 
 export const metadata: Metadata = {
   title: 'Brain Dump — Clear your mind',
@@ -27,8 +28,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   colorScheme: 'light dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
+    { media: '(prefers-color-scheme: light)', color: '#17151f' },
+    { media: '(prefers-color-scheme: dark)', color: '#17151f' },
   ],
 }
 
@@ -41,6 +42,7 @@ export default function RootLayout({
     <html lang="en" className="bg-background">
       <body className="antialiased">
         {children}
+        <PwaRegister />
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
