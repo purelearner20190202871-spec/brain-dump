@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { brainDump, task } from '@/lib/db/schema'
+import { brainDump, subject, task } from '@/lib/db/schema'
 import { and, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 
@@ -29,16 +29,36 @@ export async function savePrivateDump(content: string) {
   return { ok: true }
 }
 
+export async function getPrivateSubjects() {
+  const userId = await getUserId()
+  return db.select().from(subject).where(eq(subject.userId, userId)).orderBy(subject.createdAt)
+}
+
+export async function createPrivateSubject(name: string) {
+  const userId = await getUserId()
+  const cleanName = name.trim().slice(0, 60)
+  if (!cleanName) throw new Error('Subject name is required')
+  const created = await db.insert(subject).values({ id: crypto.randomUUID(), userId, name: cleanName }).returning()
+  return created[0]
+}
+
+export async function deletePrivateSubject(id: string) {
+  const userId = await getUserId()
+  await db.update(task).set({ subjectId: null, updatedAt: new Date() }).where(and(eq(task.userId, userId), eq(task.subjectId, id)))
+  await db.delete(subject).where(and(eq(subject.id, id), eq(subject.userId, userId)))
+  return { ok: true }
+}
+
 export async function getPrivateTasks() {
   const userId = await getUserId()
   return db.select().from(task).where(eq(task.userId, userId)).orderBy(task.createdAt)
 }
 
-export async function createPrivateTask(input: { title: string; category?: string; priority?: string; time?: string }) {
+export async function createPrivateTask(input: { title: string; category?: string; priority?: string; time?: string; subjectId?: string }) {
   const userId = await getUserId()
   const title = input.title.trim().slice(0, 240)
   if (!title) throw new Error('Task title is required')
-  const created = await db.insert(task).values({ id: crypto.randomUUID(), userId, title, category: input.category ?? 'Today', priority: input.priority ?? 'Medium', time: input.time ?? 'Today' }).returning()
+  const created = await db.insert(task).values({ id: crypto.randomUUID(), userId, title, category: input.category ?? 'Today', priority: input.priority ?? 'Medium', time: input.time ?? 'Today', subjectId: input.subjectId ?? null }).returning()
   return created[0]
 }
 
