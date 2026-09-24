@@ -2,7 +2,8 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { brainDump, subject, task } from '@/lib/db/schema'
+import { brainDump, notes, subject, task } from '@/lib/db/schema'
+import { del } from '@vercel/blob'
 import { and, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 
@@ -67,6 +68,27 @@ export async function togglePrivateTask(id: string, done: boolean) {
   const updated = await db.update(task).set({ done, updatedAt: new Date() }).where(and(eq(task.id, id), eq(task.userId, userId))).returning()
   if (!updated[0]) throw new Error('Task not found')
   return updated[0]
+}
+
+export async function getPrivateNotes() {
+  const userId = await getUserId()
+  return db.select().from(notes).where(eq(notes.userId, userId)).orderBy(notes.uploadedAt)
+}
+
+export async function togglePrivateNote(id: string, isImportant: boolean) {
+  const userId = await getUserId()
+  const updated = await db.update(notes).set({ isImportant }).where(and(eq(notes.id, id), eq(notes.userId, userId))).returning()
+  if (!updated[0]) throw new Error('Note not found')
+  return updated[0]
+}
+
+export async function deletePrivateNote(id: string) {
+  const userId = await getUserId()
+  const found = await db.select().from(notes).where(and(eq(notes.id, id), eq(notes.userId, userId))).limit(1)
+  if (!found[0]) throw new Error('Note not found')
+  await del(found[0].fileUrl)
+  await db.delete(notes).where(and(eq(notes.id, id), eq(notes.userId, userId)))
+  return { ok: true }
 }
 
 export async function deletePrivateTask(id: string) {
