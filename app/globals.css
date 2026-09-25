@@ -30,6 +30,11 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-accent-violet: var(--accent-violet);
+  --color-accent-teal: var(--accent-teal);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-urgent: var(--urgent);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -72,6 +77,11 @@
   --chart-5: oklch(0.269 0 0);
   --radius: 0.9rem;
   --lavender: oklch(0.95 0.035 285);
+  --accent-violet: oklch(0.52 0.22 278);
+  --accent-teal: oklch(0.56 0.12 178);
+  --success: oklch(0.54 0.12 150);
+  --warning: oklch(0.68 0.14 75);
+  --urgent: oklch(0.58 0.16 25);
   --blue-soft: oklch(0.95 0.025 245);
   --blue-ink: oklch(0.48 0.12 250);
   --peach: oklch(0.95 0.045 55);
@@ -123,6 +133,11 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --accent-violet: oklch(0.72 0.16 278);
+  --accent-teal: oklch(0.72 0.11 178);
+  --success: oklch(0.72 0.12 150);
+  --warning: oklch(0.78 0.14 75);
+  --urgent: oklch(0.72 0.16 25);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -163,6 +178,10 @@
 }
 
 @layer base {
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent-violet);
+    outline-offset: 2px;
+  }
   * {
     @apply border-border outline-ring/50;
   }
