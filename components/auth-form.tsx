@@ -29,7 +29,7 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
 
   return (
     <form onSubmit={submit} className="w-full max-w-[430px] overflow-hidden rounded-2xl border border-border/80 bg-card shadow-[0_24px_70px_-28px_hsl(var(--primary)/0.45)] sm:rounded-3xl">
-      <div className="border-b border-border/70 bg-primary/[0.06] px-4 pb-3 pt-3 sm:px-8 sm:pb-5 sm:pt-6">
+      <div className="border-b border-accent-violet/20 bg-accent-violet/10 px-4 pb-3 pt-3 sm:px-8 sm:pb-5 sm:pt-6">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-background ring-1 ring-border/80 sm:h-14 sm:w-14 sm:rounded-2xl">
             <Image src="/brain-dump-logo.png" alt="Brain Dump logo" width={520} height={300} priority className="h-auto w-[4.5rem] max-w-none object-contain mix-blend-multiply sm:w-24" />
