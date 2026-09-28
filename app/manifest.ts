@@ -13,7 +13,7 @@ export default function manifest(): MetadataRoute.Manifest {
     icons: [
       { src: '/icon-light-32x32.png', sizes: '32x32', type: 'image/png' },
       { src: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
-      { src: '/brain-dump-logo.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      { src: '/brain-dump-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
     ],
   }
 }
