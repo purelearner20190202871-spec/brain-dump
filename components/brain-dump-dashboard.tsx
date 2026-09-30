@@ -54,8 +54,8 @@ export function BrainDumpDashboard({ initialDump, initialTasks, initialSubjects,
   const [weekStart, setWeekStart] = useState<Date | null>(null)
   const [selectedDate, setSelectedDate] = useState('')
   const todayKey = useMemo(() => keyOf(new Date()), [])
-  useEffect(() => { const today = new Date(); setWeekStart(mondayOf(today)); setSelectedDate(keyOf(today)); const stored = window.localStorage.getItem('brain-dump-theme') as 'light' | 'dark' | null; const preferred = stored ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); setTheme(preferred); document.documentElement.classList.toggle('dark', preferred === 'dark'); document.documentElement.classList.toggle('light', preferred === 'light') }, [])
-  const toggleTheme = () => { const next = theme === 'dark' ? 'light' : 'dark'; setTheme(next); window.localStorage.setItem('brain-dump-theme', next); document.documentElement.classList.toggle('dark', next === 'dark'); document.documentElement.classList.toggle('light', next === 'light') }
+  useEffect(() => { const today = new Date(); setWeekStart(mondayOf(today)); setSelectedDate(keyOf(today)); setTheme('light'); document.documentElement.classList.remove('dark'); document.documentElement.classList.add('light') }, [])
+  const toggleTheme = () => { document.documentElement.classList.remove('dark'); document.documentElement.classList.add('light'); setTheme('light') }
   useEffect(() => { if (!focusRunning) return; const timer = window.setInterval(() => setFocusSeconds((value) => Math.max(0, value - 1)), 1000); return () => window.clearInterval(timer) }, [focusRunning])
   useEffect(() => { if (focusRunning && focusSeconds === 0) { setFocusRunning(false); setFocusComplete(true); void completeFocusSession({ durationMinutes: Math.max(1, Math.round(focusSessionDuration / 60)), taskId: focusTaskId || null }).then(() => setFocusMinutes((value) => value + Math.max(1, Math.round(focusSessionDuration / 60)))) } }, [focusRunning, focusSeconds])
   const week = useMemo(() => weekStart ? Array.from({ length: 7 }, (_, i) => { const d = new Date(weekStart); d.setDate(d.getDate() + i); return d }) : [], [weekStart])
