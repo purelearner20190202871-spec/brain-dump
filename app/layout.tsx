@@ -13,10 +13,6 @@ export const metadata: Metadata = {
         media: '(prefers-color-scheme: light)',
       },
       {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
         url: '/icon.svg',
         type: 'image/svg+xml',
       },
@@ -26,11 +22,8 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#17151f' },
-    { media: '(prefers-color-scheme: dark)', color: '#17151f' },
-  ],
+  colorScheme: 'light',
+  themeColor: '#f4f1ff',
 }
 
 export default function RootLayout({
@@ -39,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="bg-background">
+      <html lang="en" className="light bg-background">
       <body className="antialiased">
         {children}
         <PwaRegister />
