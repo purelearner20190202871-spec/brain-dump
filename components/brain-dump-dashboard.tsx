@@ -21,7 +21,7 @@ const keyOf = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.
 const mondayOf = (d: Date) => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); const day = x.getDay(); x.setDate(x.getDate() - (day === 0 ? 6 : day - 1)); return x }
 const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export function BrainDumpDashboard({ initialDump, initialTasks, initialSubjects, initialNotes, initialFocusMinutes, initialSyllabusTopics, initialTimetableEntries, initialLabGroup, userName, dateLabel }: { initialDump: string; initialTasks: Task[]; initialSubjects: Subject[]; initialNotes: Note[]; initialFocusMinutes: number; initialSyllabusTopics: SyllabusTopic[]; initialTimetableEntries: any[]; initialLabGroup: string | null; userName: string; dateLabel: string }) {
+export function BrainDumpDashboard({ initialDump, initialTasks, initialSubjects, initialNotes, initialFocusMinutes, initialSyllabusTopics, initialTimetableEntries, initialTodayTimetableEntries, initialLabGroup, userName, dateLabel }: { initialDump: string; initialTasks: Task[]; initialSubjects: Subject[]; initialNotes: Note[]; initialFocusMinutes: number; initialSyllabusTopics: SyllabusTopic[]; initialTimetableEntries: any[]; initialTodayTimetableEntries: any[]; initialLabGroup: string | null; userName: string; dateLabel: string }) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks.map((t) => ({ ...t, id: String(t.id) })))
   const [subjects, setSubjects] = useState<Subject[]>(initialSubjects)
   const [notes, setNotes] = useState<Note[]>(initialNotes.map((note) => ({ ...note, id: String(note.id) })))
@@ -64,7 +64,7 @@ export function BrainDumpDashboard({ initialDump, initialTasks, initialSubjects,
   const progress = tasks.length ? Math.round(completed / tasks.length * 100) : 0
   const priorityRank: Record<string, number> = { High: 0, Medium: 1, Low: 2 }
   const todayTasks = tasks.filter((t) => !t.done && (t.time === 'Today' || t.category === 'Today'))
-  const timetableToday = initialTimetableEntries.filter((entry: any) => entry.dayOfWeek === (new Date().getDay() || 7) && (!initialLabGroup || !entry.groupLabel || entry.groupLabel === initialLabGroup)).sort((a: any, b: any) => a.startTime.localeCompare(b.startTime))
+  const timetableToday = initialTodayTimetableEntries
   const focusSuggestion = [...todayTasks].sort((a, b) => (priorityRank[a.priority] ?? 1) - (priorityRank[b.priority] ?? 1) || (a.dueDate ? new Date(a.dueDate).getTime() : Number.MAX_SAFE_INTEGER) - (b.dueDate ? new Date(b.dueDate).getTime() : Number.MAX_SAFE_INTEGER) || String(a.createdAt ?? '').localeCompare(String(b.createdAt ?? '')))[0]
   const changeView = (next: View) => { setView(next); setMobileMenu(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }
   const organize = async () => { if (!dump.trim() || organizing) return; setOrganizing(true); setError(''); try { const response = await fetch('/api/organize', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: dump }) }); const result = await response.json() as { tasks?: Task[]; error?: string }; if (!response.ok) throw new Error(result.error ?? 'Could not organize those thoughts.'); setTasks((current) => [...(result.tasks ?? []).map((t) => ({ ...t, id: String(t.id) })), ...current]); } catch (e) { setError(e instanceof Error ? e.message : 'Could not organize those thoughts.') } finally { setOrganizing(false) } }
