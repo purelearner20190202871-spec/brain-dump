@@ -6,6 +6,12 @@ import { PwaRegister } from '@/components/pwa-register'
 export const metadata: Metadata = {
   title: 'Brain Dump — Clear your mind',
   description: 'Turn messy thoughts into a clear, organized plan.',
+  applicationName: 'Brain Dump',
+  appleWebApp: {
+    capable: true,
+    title: 'Brain Dump',
+    statusBarStyle: 'default',
+  },
   icons: {
     icon: [
       {
@@ -24,6 +30,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   colorScheme: 'light',
   themeColor: '#f4f1ff',
+  viewportFit: 'cover',
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
