@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn, signUp } from '@/lib/auth-client'
+import { saveStudentProfile } from '@/app/actions/timetable'
 
 export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const router = useRouter()
@@ -15,13 +16,24 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
     setError('')
     setLoading(true)
     const data = new FormData(event.currentTarget)
+    const collegeId = String(data.get('collegeId') ?? '').trim().toUpperCase()
+    const loginEmail = `${collegeId.toLowerCase()}@college.local`
     const result = mode === 'sign-in'
-      ? await signIn.email({ email: String(data.get('email')), password: String(data.get('password')) })
-      : await signUp.email({ email: String(data.get('email')), password: String(data.get('password')), name: String(data.get('name')) })
+      ? await signIn.email({ email: loginEmail, password: String(data.get('password')) })
+      : await signUp.email({ email: loginEmail, password: String(data.get('password')), name: String(data.get('name')) })
     setLoading(false)
     if (result.error) {
       setError('We could not sign you in with those details.')
       return
+    }
+    if (mode === 'sign-up') {
+      try {
+        await saveStudentProfile({ collegeId, branch: String(data.get('branch')), semester: Number(data.get('semester')), labGroup: String(data.get('group')) as 'G1' | 'G2' })
+      } catch {
+        setError('Your account was created, but we could not save your student profile.')
+        setLoading(false)
+        return
+      }
     }
     router.push('/')
     router.refresh()
@@ -47,8 +59,12 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
           <p className="mt-2 text-sm leading-6 text-muted-foreground">A private space to capture what is on your mind and turn it into focused action.</p>
         </div>
         <div className="flex flex-col gap-3">
-          {mode === 'sign-up' && <label className="text-sm font-medium">Name<input name="name" required autoComplete="name" placeholder="Your name" className="mt-1.5 w-full rounded-xl border border-border bg-background px-3.5 py-3 font-normal outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10" /></label>}
-          <label className="text-sm font-medium">Email<input name="email" type="email" required autoComplete="email" placeholder="you@example.com" className="mt-1.5 w-full rounded-xl border border-border bg-background px-3.5 py-3 font-normal outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10" /></label>
+          {mode === 'sign-up' && <>
+            <label className="text-sm font-medium">Name<input name="name" required autoComplete="name" placeholder="Your name" className="mt-1.5 w-full rounded-xl border border-border bg-background px-3.5 py-3 font-normal outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10" /></label>
+            <div className="grid grid-cols-2 gap-3"><label className="text-sm font-medium">Branch<input name="branch" required placeholder="Geoinformatics" className="mt-1.5 w-full rounded-xl border border-border bg-background px-3.5 py-3 font-normal outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10" /></label><label className="text-sm font-medium">Semester<select name="semester" required defaultValue="1" className="mt-1.5 w-full rounded-xl border border-border bg-background px-3.5 py-3 font-normal outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10">{Array.from({ length: 8 }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label></div>
+            <fieldset><legend className="text-sm font-medium">Group</legend><div className="mt-1.5 grid grid-cols-2 gap-3">{['G1', 'G2'].map((group) => <label key={group} className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-3.5 py-3 text-sm"><input type="radio" name="group" value={group} defaultChecked={group === 'G2'} required />{group}</label>)}</div></fieldset>
+          </>}
+          <label className="text-sm font-medium">College ID{mode === 'sign-in' && <span className="ml-1 text-xs text-muted-foreground">(not email)</span>}<input name="collegeId" required autoComplete="username" placeholder="e.g. 2026GEO014" className="mt-1.5 w-full rounded-xl border border-border bg-background px-3.5 py-3 font-normal uppercase outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10" /></label>
           <label className="text-sm font-medium">Password<input name="password" type="password" minLength={8} required autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'} placeholder="At least 8 characters" className="mt-1.5 w-full rounded-xl border border-border bg-background px-3.5 py-3 font-normal outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10" /></label>
         </div>
         {error && <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
