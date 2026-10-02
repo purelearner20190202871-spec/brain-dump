@@ -177,6 +177,14 @@
   }
 }
 
+@media (max-width: 1023px) {
+  html { overscroll-behavior-y: none; }
+  body { min-width: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+  button, a, select, input, textarea { touch-action: manipulation; }
+  button, [role='button'] { min-height: 44px; }
+  input, select, textarea { font-size: 16px; }
+}
+
 @layer base {
   input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
     outline: 2px solid var(--accent-violet);
