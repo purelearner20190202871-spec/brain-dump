@@ -11,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#f4f1ff',
     orientation: 'portrait-primary',
     icons: [
-      { src: '/icon-light-32x32.png', sizes: '32x32', type: 'image/png' },
-      { src: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+      { src: '/brain-dump-icon-512.png', sizes: '32x32', type: 'image/png' },
+      { src: '/brain-dump-icon-512.png', sizes: '180x180', type: 'image/png' },
       { src: '/brain-dump-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
   }
